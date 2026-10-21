@@ -1,0 +1,7 @@
+Rinvo source-code notice
+
+Rinvo's original source code is provided under the MIT License. Third-party
+models, pretrained weights, dependencies, datasets, and assets are not
+relicensed by this notice and may be subject to separate terms. Review the
+exact upstream license and model card before use, redistribution, or commercial
+deployment. No third-party model weights are included in this repository.
