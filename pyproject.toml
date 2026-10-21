@@ -21,8 +21,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8.2,<9.0", "httpx>=0.27,<1.0", "ruff>=0.5,<1.0"]
 demo = ["gradio>=4.36,<6.0"]
-# Install the upstream model separately after checking its current requirements/license.
-# Keeping it out of mandatory dependencies avoids heavyweight or incompatible installs.
+chatterbox = ["chatterbox-tts"]
+# The optional Chatterbox extra installs the upstream runtime, but model weights are downloaded separately at first use.
+# Review upstream model/checkpoint terms and hardware requirements before enabling real inference.
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/rinvo"]
