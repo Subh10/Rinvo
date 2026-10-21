@@ -50,6 +50,8 @@ def synthesize(
     if len(audio) < 12 or audio[:4] != b"RIFF" or audio[8:12] != b"WAVE":
         raise RuntimeError("Rinvo API response was not a valid RIFF/WAVE file")
 
+    if "\\n" in output_path or "\\r" in output_path:
+        raise ValueError("output_path must not contain newline characters")
     destination = Path(output_path)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_bytes(audio)
