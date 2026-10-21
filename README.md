@@ -60,6 +60,12 @@ Set `RINVO_BACKEND=chatterbox_turbo` and `RINVO_AUDIO_PROMPT_PATH=/absolute/path
 
 See `.env.example`. The backend defaults to `mock`, which is useful for tests and API integration checks but does **not** synthesize speech. Set `RINVO_BACKEND=chatterbox_turbo` and `RINVO_AUDIO_PROMPT_PATH` to request real inference. The process returns a clear error if dependencies, model initialization, or the reference audio are unavailable.
 
+## GitHub Actions integration
+
+Rinvo includes a composite GitHub Action at the repository root. It calls a **separately running Rinvo API** and saves the returned WAV file as a workflow artifact; it does not download model weights or run inference on the GitHub runner. See [GitHub Action setup and example workflow](docs/github-action.md).
+
+The Action is implemented, but do not tag a Marketplace release until the branch's CI passes and a real request has been verified against a deployment with a working speech backend. It is not yet proof of end-to-end audio generation.
+
 ## API
 
 ### `POST /v1/audio/speech`
