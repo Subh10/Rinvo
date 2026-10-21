@@ -1,0 +1,41 @@
+name: Rinvo Text to Speech
+description: Generate a WAV speech file in GitHub Actions using a Rinvo API endpoint.
+author: Subh10
+branding:
+  icon: volume-2
+  color: purple
+inputs:
+  api_url:
+    description: Base URL of a running Rinvo API, for example https://tts.example.com
+    required: true
+  text:
+    description: Text to synthesize. Supports multiline text.
+    required: true
+  output_path:
+    description: Path where the WAV file will be written.
+    required: false
+    default: rinvo-output.wav
+  bearer_token:
+    description: Optional bearer token if your deployment protects the endpoint with a proxy.
+    required: false
+  timeout_seconds:
+    description: HTTP request timeout in seconds.
+    required: false
+    default: "180"
+outputs:
+  audio_path:
+    description: Path to the generated WAV file.
+    value: ${{ steps.synthesize.outputs.audio_path }}
+runs:
+  using: composite
+  steps:
+    - name: Generate speech with Rinvo
+      shell: bash
+      env:
+        INPUT_API_URL: ${{ inputs.api_url }}
+        INPUT_TEXT: ${{ inputs.text }}
+        INPUT_OUTPUT_PATH: ${{ inputs.output_path }}
+        INPUT_BEARER_TOKEN: ${{ inputs.bearer_token }}
+        INPUT_TIMEOUT_SECONDS: ${{ inputs.timeout_seconds }}
+      run: python "${{ github.action_path }}/action/client.py"
+      id: synthesize
