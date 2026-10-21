@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     backend: str = "mock"
     model_id: str = "chatterbox-turbo"
     device: str = "auto"
+    audio_prompt_path: str | None = None
     max_text_chars: int = 5000
     host: str = "127.0.0.1"
     port: int = 8000
