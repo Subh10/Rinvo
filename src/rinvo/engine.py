@@ -1,6 +1,7 @@
 """Lazy TTS engine with a replaceable backend boundary."""
 from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 from typing import Any
 import numpy as np
 
@@ -19,10 +20,13 @@ class SpeechResult:
 
 
 class TTSService:
-    def __init__(self, backend: str, model_id: str, device: str = "auto") -> None:
+    def __init__(
+        self, backend: str, model_id: str, device: str = "auto", audio_prompt_path: str | None = None
+    ) -> None:
         self.backend = backend.lower()
         self.model_id = model_id
         self.device = device
+        self.audio_prompt_path = audio_prompt_path
         self._model: Any = None
         self._sample_rate: int | None = None
 
@@ -35,9 +39,18 @@ class TTSService:
             )
         if self.backend != "chatterbox_turbo":
             raise BackendUnavailableError(f"Unsupported backend '{self.backend}'.")
+        if not self.audio_prompt_path:
+            raise BackendUnavailableError(
+                "Chatterbox-Turbo requires a reference voice recording. Set RINVO_AUDIO_PROMPT_PATH "
+                "to a local, authorized audio file (for example, a clean ~10-second WAV clip)."
+            )
+        if not Path(self.audio_prompt_path).is_file():
+            raise BackendUnavailableError(
+                f"Reference audio file was not found: {self.audio_prompt_path}"
+            )
         try:
             import torch
-            from chatterbox.tts import ChatterboxTTS
+            from chatterbox.tts_turbo import ChatterboxTurboTTS
         except ImportError as exc:
             raise BackendUnavailableError(
                 "Chatterbox-Turbo dependencies are unavailable. Follow the upstream installation instructions, "
@@ -47,7 +60,7 @@ class TTSService:
         if device == "auto":
             device = "cuda" if torch.cuda.is_available() else "cpu"
         try:
-            self._model = ChatterboxTTS.from_pretrained(device=device)
+            self._model = ChatterboxTurboTTS.from_pretrained(device=device)
             self._sample_rate = int(getattr(self._model, "sr", 24000))
         except Exception as exc:
             raise BackendUnavailableError(f"Could not initialize Chatterbox-Turbo: {exc}") from exc
@@ -55,7 +68,7 @@ class TTSService:
     def synthesize(self, text: str) -> SpeechResult:
         self._load()
         try:
-            generated = self._model.generate(text)
+            generated = self._model.generate(text, audio_prompt_path=self.audio_prompt_path)
             if hasattr(generated, "detach"):
                 generated = generated.detach().float().cpu().numpy()
             audio = np.asarray(generated, dtype=np.float32).squeeze()
@@ -71,4 +84,4 @@ class TTSService:
 @lru_cache(maxsize=1)
 def get_engine() -> TTSService:
     settings = get_settings()
-    return TTSService(settings.backend, settings.model_id, settings.device)
+    return TTSService(settings.backend, settings.model_id, settings.device, settings.audio_prompt_path)
