@@ -2,7 +2,7 @@ name: Rinvo Text to Speech
 description: Generate a WAV speech file in GitHub Actions using a Rinvo API endpoint.
 author: Subh10
 branding:
-  icon: audio
+  icon: volume-2
   color: purple
 inputs:
   api_url:
