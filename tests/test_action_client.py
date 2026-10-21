@@ -1,7 +1,11 @@
-import io
+import sys
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+
+# Make the repository root importable in CI, where only `src` is configured in pytest.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from action.client import synthesize
 
