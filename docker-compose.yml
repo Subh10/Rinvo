@@ -1,0 +1,10 @@
+services:
+  rinvo-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      RINVO_BACKEND: ${RINVO_BACKEND:-mock}
+      RINVO_MODEL_ID: ${RINVO_MODEL_ID:-chatterbox-turbo}
+      RINVO_DEVICE: ${RINVO_DEVICE:-auto}
+      RINVO_MAX_TEXT_CHARS: ${RINVO_MAX_TEXT_CHARS:-5000}
