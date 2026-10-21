@@ -46,7 +46,7 @@ curl -X POST http://127.0.0.1:8000/v1/audio/speech \\
   --output rinvo.wav
 ```
 
-The speech endpoint requires the optional model backend and its compatible dependencies. The current upstream Turbo example imports `ChatterboxTurboTTS` from `chatterbox.tts_turbo` and calls `generate(text, audio_prompt_path=...)`; see the [official Chatterbox repository](https://github.com/resemble-ai/chatterbox). Configure `RINVO_AUDIO_PROMPT_PATH` to a local reference recording you are authorized to use. The clip should be longer than five seconds according to the upstream implementation. Install and verify upstream dependencies and license terms before enabling it. Rinvo does not bundle model weights.
+The speech endpoint requires the optional model backend and its compatible dependencies. Install the optional runtime with `pip install -e '.[chatterbox]'` (Python 3.11 is the upstream-recommended baseline). The current upstream Turbo example imports `ChatterboxTurboTTS` from `chatterbox.tts_turbo` and calls `generate(text, audio_prompt_path=...)`; see the [official Chatterbox repository](https://github.com/resemble-ai/chatterbox). Configure `RINVO_AUDIO_PROMPT_PATH` to a local reference recording you are authorized to use. The clip should be longer than five seconds according to the upstream implementation. Install and verify upstream dependencies and license terms before enabling it. Rinvo does not bundle model weights.
 
 ### Run the browser demo
 
@@ -59,6 +59,12 @@ Set `RINVO_BACKEND=chatterbox_turbo` and `RINVO_AUDIO_PROMPT_PATH=/absolute/path
 ## Configuration
 
 See `.env.example`. The backend defaults to `mock`, which is useful for tests and API integration checks but does **not** synthesize speech. Set `RINVO_BACKEND=chatterbox_turbo` and `RINVO_AUDIO_PROMPT_PATH` to request real inference. The process returns a clear error if dependencies, model initialization, or the reference audio are unavailable.
+
+## GitHub Actions integration
+
+Rinvo includes a composite GitHub Action at the repository root. It calls a **separately running Rinvo API** and saves the returned WAV file as a workflow artifact; it does not download model weights or run inference on the GitHub runner. See [GitHub Action setup and example workflow](docs/github-action.md).
+
+The Action is implemented, but do not tag a Marketplace release until the branch's CI passes and a real request has been verified against a deployment with a working speech backend. It is not yet proof of end-to-end audio generation.
 
 ## API
 
