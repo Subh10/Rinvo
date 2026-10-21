@@ -46,7 +46,7 @@ curl -X POST http://127.0.0.1:8000/v1/audio/speech \\
   --output rinvo.wav
 ```
 
-The speech endpoint requires the optional model backend and its compatible dependencies. The current upstream Turbo example imports `ChatterboxTurboTTS` from `chatterbox.tts_turbo` and calls `generate(text, audio_prompt_path=...)`; see the [official Chatterbox repository](https://github.com/resemble-ai/chatterbox). Configure `RINVO_AUDIO_PROMPT_PATH` to a local reference recording you are authorized to use. The clip should be longer than five seconds according to the upstream implementation. Install and verify upstream dependencies and license terms before enabling it. Rinvo does not bundle model weights.
+The speech endpoint requires the optional model backend and its compatible dependencies. Install the optional runtime with `pip install -e '.[chatterbox]'` (Python 3.11 is the upstream-recommended baseline). The current upstream Turbo example imports `ChatterboxTurboTTS` from `chatterbox.tts_turbo` and calls `generate(text, audio_prompt_path=...)`; see the [official Chatterbox repository](https://github.com/resemble-ai/chatterbox). Configure `RINVO_AUDIO_PROMPT_PATH` to a local reference recording you are authorized to use. The clip should be longer than five seconds according to the upstream implementation. Install and verify upstream dependencies and license terms before enabling it. Rinvo does not bundle model weights.
 
 ### Run the browser demo
 
