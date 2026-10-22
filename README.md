@@ -64,7 +64,7 @@ See `.env.example`. The backend defaults to `mock`, which is useful for tests an
 
 Rinvo includes a composite GitHub Action at the repository root. It calls a **separately running Rinvo API** and saves the returned WAV file as a workflow artifact; it does not download model weights or run inference on the GitHub runner. See [GitHub Action setup and example workflow](docs/github-action.md).
 
-The Action is implemented, but do not tag a Marketplace release until the branch's CI passes and a real request has been verified against a deployment with a working speech backend. It is not yet proof of end-to-end audio generation.
+The Action is implemented, but a green CI run is not proof of end-to-end audio generation. Before publishing, configure a live model-backed API and run the manual [Real TTS smoke test](.github/workflows/real-tts-smoke.yml); see the [real TTS and Marketplace release checklist](docs/real-tts-marketplace-checklist.md). Do not claim real inference or Marketplace readiness until the corresponding checks pass.
 
 ## API
 
@@ -111,7 +111,7 @@ See [docs/licensing.md](docs/licensing.md), [docs/security.md](docs/security.md)
 
 - [x] API contract, validation, backend abstraction, tests, docs scaffold
 - [ ] Verify upstream model installation and licensing
-- [ ] End-to-end real audio generation on documented hardware
+- [ ] End-to-end real audio generation on documented hardware (run the [manual smoke test](.github/workflows/real-tts-smoke.yml))
 - [ ] Docker validation and reproducible baseline benchmark
 - [ ] External clean-install verification
 
