@@ -1,0 +1,99 @@
+name: Real TTS smoke test
+
+on:
+  workflow_dispatch:
+    inputs:
+      text:
+        description: Text to synthesize using the configured live backend
+        required: true
+        default: "Hello from Rinvo. This is a real text to speech smoke test."
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  real-tts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check deployment configuration
+        env:
+          RINVO_API_URL: ${{ vars.RINVO_API_URL }}
+        shell: bash
+        run: |
+          if [[ -z "${RINVO_API_URL// }" ]]; then
+            echo "::error::Set the repository Actions variable RINVO_API_URL to the HTTPS base URL of a deployed Rinvo API."
+            exit 1
+          fi
+
+      - name: Check out Rinvo
+        uses: actions/checkout@v4
+
+      - name: Verify API health and model configuration
+        env:
+          RINVO_API_URL: ${{ vars.RINVO_API_URL }}
+          RINVO_API_TOKEN: ${{ secrets.RINVO_API_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          auth=()
+          if [[ -n "$RINVO_API_TOKEN" ]]; then
+            auth=(-H "Authorization: Bearer $RINVO_API_TOKEN")
+          fi
+          curl --fail --silent --show-error --max-time 20 "${auth[@]}" "$RINVO_API_URL/health"
+          echo
+          curl --fail --silent --show-error --max-time 20 "${auth[@]}" "$RINVO_API_URL/v1/models"
+          echo
+
+      - name: Generate speech through the published Action interface
+        id: speech
+        uses: ./
+        with:
+          api_url: ${{ vars.RINVO_API_URL }}
+          text: ${{ inputs.text }}
+          output_path: artifacts/rinvo-smoke.wav
+          bearer_token: ${{ secrets.RINVO_API_TOKEN }}
+          timeout_seconds: "600"
+
+      - name: Validate actual WAV payload
+        env:
+          WAV_PATH: ${{ steps.speech.outputs.audio_path }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import wave
+          from pathlib import Path
+
+          path = Path(os.environ["WAV_PATH"])
+          if not path.is_file() or path.stat().st_size < 44:
+              raise SystemExit("FAIL: WAV file missing or too small")
+          with wave.open(str(path), "rb") as wav:
+              channels = wav.getnchannels()
+              sample_rate = wav.getframerate()
+              frames = wav.getnframes()
+              sample_width = wav.getsampwidth()
+              duration = frames / sample_rate if sample_rate else 0
+              raw = wav.readframes(frames)
+          if channels < 1 or sample_rate < 8000 or duration < 0.25:
+              raise SystemExit(
+                  f"FAIL: invalid audio metadata: channels={channels}, rate={sample_rate}, duration={duration:.3f}s"
+              )
+          if not raw or len(set(raw)) <= 1:
+              raise SystemExit("FAIL: audio payload appears silent or constant")
+          print(
+              "PASS: WAV parsed; "
+              f"channels={channels}, sample_rate={sample_rate}, "
+              f"sample_width={sample_width}, frames={frames}, duration={duration:.2f}s, "
+              f"bytes={path.stat().st_size}"
+          )
+          PY
+
+      - name: Upload smoke-test audio
+        uses: actions/upload-artifact@v4
+        with:
+          name: rinvo-real-tts-smoke
+          path: ${{ steps.speech.outputs.audio_path }}
+          if-no-files-found: error
+          retention-days: 7
