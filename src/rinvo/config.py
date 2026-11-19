@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     device: str = "auto"
     audio_prompt_path: str | None = None
     max_text_chars: int = 5000
+    warmup_on_startup: bool = True
     host: str = "127.0.0.1"
     port: int = 8000
 

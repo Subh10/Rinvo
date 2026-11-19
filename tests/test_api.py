@@ -30,3 +30,9 @@ def test_mock_backend_does_not_claim_to_generate_audio():
     response = client.post("/v1/audio/speech", json={"input": "hello", "response_format": "wav"})
     assert response.status_code == 503
     assert "does not synthesize speech" in response.json()["detail"]
+
+
+def test_readiness_is_not_green_for_mock_backend():
+    response = client.get("/ready")
+    assert response.status_code == 503
+    assert "not ready" in response.json()["detail"].lower()
