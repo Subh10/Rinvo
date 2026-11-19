@@ -13,7 +13,9 @@ Rinvo is an open-source, self-hostable text-to-speech (TTS) service with a Pytho
 - Input validation and configurable text length
 - Optional Gradio demo
 - WAV responses
-- Lazy model loading and explicit errors when the backend is unavailable
+- Configurable startup warm-up and explicit model readiness endpoint
+- Cached reference-voice conditioning and serialized inference for safer single-GPU operation
+- Per-response generation, encoding, audio-duration, and real-time-factor headers (not yet a benchmark suite)
 - Pytest suite and GitHub Actions CI
 
 ## Quick start
@@ -81,9 +83,11 @@ Request:
 
 Successful requests return `audio/wav`. Empty text, excessive input, and unsupported formats return a 4xx response. Model/backend errors return a clear server error rather than fabricated audio.
 
-### `GET /health`
+### `GET /health` and `GET /ready`
 
-Returns service health and the configured backend name. This is a process-level health check; it does not guarantee that model weights are available.
+`/health` reports process health, configured backend, model ID, and whether the model is loaded. `/ready` returns `200` only after the real model is initialized; otherwise it returns `503`. Configure `RINVO_WARMUP_ON_STARTUP=true` (default) to load model weights and prepare reference-voice conditioning during application startup. This makes startup slower but avoids charging first-request model-load time to a user request.
+
+Successful speech responses include `X-Rinvo-Generation-Ms`, `X-Rinvo-Encoding-Ms`, `X-Rinvo-Audio-Duration-S`, and `X-Rinvo-Real-Time-Factor`. These are per-request diagnostics, not published performance claims. The API currently returns a complete WAV after synthesis; it does not provide incremental audio streaming or full-duplex conversation.
 
 ### `GET /v1/models`
 
